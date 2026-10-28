@@ -187,19 +187,78 @@ function getSectionStats(sectionKey,data=collectData()){
 }
 function makeAutomaticNote(){
  if(!currentData)return;
- const data=collectData(),stats=getSectionStats(activeSection,data);
+ const data=collectData(),section=currentData.sections?.[activeSection];
+ const items=section?.items||[],scores=data.sections?.[activeSection]?.scores||{};
  const sectionName=LABELS[activeSection].replace(/^Instrumen /,'').replace(/^Kelengkapan /,'');
+ const teacherName=(data.name||currentData.name||'Guru yang disupervisi').trim();
+ const evaluated=items.map(item=>{
+   const raw=scores[String(item.row)];
+   return {label:String(item.label||'Komponen penilaian').trim(),score:raw===undefined||raw===null||raw===''?null:Number(raw)};
+ }).filter(item=>item.score===0||item.score===1||item.score===2);
+ const count=evaluated.length;
  let note='';
- if(!stats.count) note=`Pada bagian ${sectionName.toLowerCase()}, penilaian belum diisi. Mohon lengkapi skor berdasarkan bukti hasil supervisi agar umpan balik dan tindak lanjut dapat disusun secara tepat.`;
- else {
-  const opening=stats.percent>=80?'Secara umum, hasil telaah menunjukkan bahwa sebagian besar aspek telah terpenuhi dengan baik.':stats.percent>=50?'Hasil telaah menunjukkan beberapa aspek sudah terpenuhi, namun masih ada bagian yang perlu diperkuat.':'Hasil telaah menunjukkan masih terdapat sejumlah aspek penting yang perlu menjadi prioritas perbaikan.';
-  const strength=stats.good?` Apresiasi diberikan pada ${stats.good} butir yang telah sesuai dengan kriteria.`:' Perlu mulai mengidentifikasi aspek yang sudah berjalan baik sebagai modal perbaikan.';
-  let focus=stats.absent?` Prioritas pertama adalah menindaklanjuti ${stats.absent} butir yang belum tersedia.`:'';
-  if(stats.needs)focus+=` Selain itu, ${stats.needs} butir yang sudah tersedia perlu disesuaikan kembali dengan kriteria yang diharapkan.`;
-  const follow=stats.percent>=80?' Pertahankan praktik yang sudah baik dan lakukan penyempurnaan secara berkala.':' Disarankan menyusun langkah tindak lanjut yang realistis, menentukan waktu penyelesaian, dan meninjau kembali hasil perbaikannya pada supervisi berikutnya.';
-  note=opening+strength+focus+follow;
+ if(!count){
+   note=`Catatan supervisi ${sectionName.toLowerCase()} untuk ${teacherName} belum dapat disusun karena belum ada butir yang dinilai. Silakan isi skor berdasarkan bukti supervisi terlebih dahulu agar apresiasi dan rekomendasi yang diberikan benar-benar sesuai dengan kondisi di lapangan.`;
+ } else {
+   const total=evaluated.reduce((sum,item)=>sum+item.score,0);
+   const percent=total/(count*2)*100;
+   const nilai=percent.toLocaleString('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2});
+   // Kategori deskriptif untuk draf otomatis; silakan sesuaikan dengan pedoman sekolah.
+   const predikat=percent>=90?'Sangat Baik':percent>=80?'Baik':percent>=70?'Cukup':'Perlu Perbaikan';
+   const good=evaluated.filter(item=>item.score===2);
+   const needs=evaluated.filter(item=>item.score===1);
+   const absent=evaluated.filter(item=>item.score===0);
+   const listLabels=list=>list.slice(0,3).map(item=>item.label.replace(/[.;]+$/,''));
+   const joinLabels=list=>{
+     const labels=listLabels(list);
+     if(!labels.length)return '';
+     if(labels.length===1)return labels[0];
+     if(labels.length===2)return labels[0]+' dan '+labels[1];
+     return labels.slice(0,-1).join(', ')+', dan '+labels[labels.length-1];
+   };
+   const moreText=list=>list.length>3?` serta ${list.length-3} aspek lainnya`: '';
+   let opening='';
+   if(activeSection==='modul'){
+     opening=`Modul Ajar yang disusun oleh ${teacherName} memperoleh nilai ${nilai} (${predikat}). `;
+   } else if(activeSection==='administrasi'){
+     opening=`Administrasi pembelajaran yang disiapkan oleh ${teacherName} memperoleh nilai ${nilai} (${predikat}). `;
+   } else {
+     opening=`Hasil pengamatan proses pembelajaran yang dilaksanakan oleh ${teacherName} memperoleh nilai ${nilai} (${predikat}). `;
+   }
+   let strength='';
+   if(good.length){
+     strength=activeSection==='proses'
+       ?`Aspek yang sudah tampak sesuai dengan kriteria antara lain ${joinLabels(good)}${moreText(good)}. `
+       :`Komponen yang telah memenuhi kriteria antara lain ${joinLabels(good)}${moreText(good)}. `;
+   } else {
+     strength='Berdasarkan butir yang dinilai, belum ada aspek yang memperoleh skor tertinggi sehingga setiap komponen perlu ditelaah bersama untuk menentukan langkah perbaikan yang paling mendesak. ';
+   }
+   let improvement='';
+   if(needs.length && absent.length){
+     improvement=`Perhatian berikutnya perlu diarahkan pada ${joinLabels(needs)}${moreText(needs)}, yang sudah tersedia tetapi masih perlu disesuaikan, serta ${joinLabels(absent)}${moreText(absent)}, yang belum tersedia atau belum ditemukan saat supervisi. `;
+   } else if(needs.length){
+     improvement=`Beberapa komponen, yaitu ${joinLabels(needs)}${moreText(needs)}, sudah tersedia tetapi masih perlu disempurnakan agar lebih sesuai dengan kriteria yang diharapkan. `;
+   } else if(absent.length){
+     improvement=`Komponen yang perlu menjadi prioritas tindak lanjut adalah ${joinLabels(absent)}${moreText(absent)}, karena belum tersedia atau belum ditemukan saat supervisi. `;
+   } else {
+     improvement='Seluruh butir yang dinilai telah memperoleh skor sesuai kriteria. Fokus selanjutnya adalah menjaga konsistensi pelaksanaan dan melakukan penyempurnaan apabila ditemukan kebutuhan baru. ';
+   }
+   let follow='';
+   if(needs.length||absent.length){
+     follow=activeSection==='proses'
+       ?'Pada tindak lanjut, guru disarankan memilih strategi yang sesuai dengan kebutuhan murid, menerapkannya secara konsisten, lalu meninjau dampaknya pada pembelajaran berikutnya.'
+       :'Sebagai tindak lanjut, guru disarankan menyempurnakan komponen tersebut berdasarkan instrumen dan bukti yang tersedia, kemudian memeriksa kembali kelengkapannya sebelum supervisi berikutnya.';
+   } else {
+     follow='Hasil yang sudah baik ini perlu dipertahankan. Peninjauan berkala tetap disarankan agar kualitas pelaksanaan dan kelengkapan dokumen terjaga.';
+   }
+   note=opening+strength+improvement+follow;
  }
- const textarea=$('note-'+activeSection);if(textarea){textarea.value=note;textarea.focus();showMsg('status','Draf catatan otomatis dibuat. Silakan periksa dan sesuaikan dengan kondisi nyata sebelum menyimpan.','info');}
+ const textarea=$('note-'+activeSection);
+ if(textarea){
+   textarea.value=note;
+   textarea.focus();
+   showMsg('status','Draf catatan otomatis dibuat berdasarkan nama guru, instrumen, nilai, dan butir yang dinilai. Periksa kembali isi serta predikatnya sesuai pedoman sekolah sebelum menyimpan.','info');
+ }
 }
 function drawResultsChart(){
  if(!currentData)return;
