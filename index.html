@@ -1,1315 +1,161 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#0A1931">
-
-    <title>e-SARPRAS | SMP Angkasa Husein Sastranegara</title>
-
-    <!-- Framework, ikon, dan font -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-
-    <style>
-        :root {
-            --biru: #0A1931;
-            --biru-muda: #185ADB;
-            --orange: #FF8C00;
-            --putih: #F5F7FB;
-            --teks: #243047;
-            --abu: #718096;
-            --garis: #E7ECF3;
-            --hijau: #15803D;
-            --merah: #DC2626;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            background: var(--putih);
-            font-family: 'Poppins', sans-serif;
-            color: var(--teks);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        button, input, select, textarea {
-            font-family: inherit;
-        }
-
-        .content {
-            flex: 1;
-        }
-
-        /* KOP SEKOLAH */
-        .kop-sekolah {
-            position: relative;
-            overflow: hidden;
-            background: linear-gradient(120deg, #071326, #0A1931 60%, #15366B);
-            color: white;
-            padding: 25px 16px 22px;
-            border-bottom: 5px solid var(--orange);
-            border-radius: 0 0 24px 24px;
-            box-shadow: 0 8px 25px rgba(10, 25, 49, .15);
-        }
-
-        .kop-sekolah::after {
-            content: "";
-            position: absolute;
-            right: -45px;
-            top: -100px;
-            width: 240px;
-            height: 240px;
-            border: 30px solid rgba(255, 255, 255, .035);
-            border-radius: 50%;
-            pointer-events: none;
-        }
-
-        .kop-inner {
-            position: relative;
-            z-index: 1;
-            max-width: 1000px;
-            margin: auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-        }
-
-        .logo-frame {
-            width: 94px;
-            height: 94px;
-            min-width: 94px;
-            border-radius: 50%;
-            background: #fff;
-            padding: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 3px solid var(--orange);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, .2);
-            overflow: hidden;
-        }
-
-        .logo-sekolah {
-            display: block;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: contain;
-        }
-
-        .kop-text {
-            text-align: left;
-        }
-
-        .kop-yayasan {
-            font-size: .75rem;
-            font-weight: 500;
-            letter-spacing: 2px;
-            color: #D6E2F5;
-            margin: 0 0 5px;
-            text-transform: uppercase;
-        }
-
-        .kop-text h1 {
-            font-size: clamp(1rem, 2.4vw, 1.55rem);
-            font-weight: 800;
-            letter-spacing: .2px;
-            line-height: 1.35;
-            margin: 0;
-        }
-
-        .kop-alamat {
-            color: #D6E2F5;
-            font-size: .75rem;
-            margin: 6px 0 0;
-        }
-
-        .kop-aplikasi {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            background: rgba(255, 140, 0, .14);
-            color: #FFB24D;
-            border: 1px solid rgba(255, 140, 0, .35);
-            border-radius: 30px;
-            padding: 6px 12px;
-            margin-top: 12px;
-            font-size: .7rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-        }
-
-        /* KONTEN */
-        .main-container {
-            width: 100%;
-            max-width: 1000px;
-            margin: 25px auto 35px;
-            padding: 0 16px;
-        }
-
-        .welcome-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .welcome-title {
-            font-size: 1.12rem;
-            font-weight: 800;
-            color: var(--biru);
-            margin: 0 0 5px;
-        }
-
-        .welcome-subtitle {
-            font-size: .78rem;
-            color: var(--abu);
-            margin: 0;
-            line-height: 1.6;
-        }
-
-        .status-online {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 7px 10px;
-            border-radius: 30px;
-            background: #E8F7EE;
-            color: #16723A;
-            font-size: .67rem;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .status-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: #22C55E;
-        }
-
-        .panel {
-            background: #fff;
-            border: 1px solid var(--garis);
-            border-radius: 18px;
-            box-shadow: 0 6px 24px rgba(10, 25, 49, .045);
-            padding: 18px;
-            margin-bottom: 18px;
-        }
-
-        .panel-heading {
-            font-size: .85rem;
-            font-weight: 700;
-            color: var(--biru);
-            margin-bottom: 13px;
-        }
-
-        .search-input {
-            height: 54px;
-            border: 1px solid var(--garis) !important;
-            background: #F7F9FC;
-            border-radius: 12px 0 0 12px !important;
-            padding-left: 15px;
-            font-size: .85rem;
-            box-shadow: none !important;
-        }
-
-        .search-input:focus {
-            background: #fff;
-            border-color: var(--biru-muda) !important;
-        }
-
-        .btn-search {
-            background: var(--orange);
-            color: white;
-            font-weight: 700;
-            border: none;
-            border-radius: 0 12px 12px 0 !important;
-            padding: 0 22px;
-        }
-
-        .btn-search:hover {
-            background: #E77D00;
-            color: white;
-        }
-
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 12px;
-        }
-
-        .action-card {
-            width: 100%;
-            min-height: 86px;
-            display: flex;
-            align-items: center;
-            gap: 13px;
-            text-align: left;
-            padding: 15px;
-            background: #fff;
-            border: 1px solid var(--garis);
-            border-radius: 15px;
-            transition: .2s ease;
-        }
-
-        .action-card:hover {
-            transform: translateY(-2px);
-            border-color: #B9CCF4;
-            box-shadow: 0 8px 18px rgba(24, 90, 219, .08);
-        }
-
-        .action-icon {
-            width: 45px;
-            height: 45px;
-            min-width: 45px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 13px;
-            font-size: 1.35rem;
-        }
-
-        .icon-blue {
-            background: #EAF0FF;
-            color: var(--biru-muda);
-        }
-
-        .icon-orange {
-            background: #FFF1DF;
-            color: #D97706;
-        }
-
-        .action-title {
-            display: block;
-            font-size: .83rem;
-            font-weight: 700;
-            color: var(--biru);
-            margin-bottom: 3px;
-        }
-
-        .action-desc {
-            display: block;
-            font-size: .68rem;
-            color: var(--abu);
-            line-height: 1.5;
-        }
-
-        /* PEMINDAI QR */
-        #reader {
-            width: 100% !important;
-            max-width: 380px !important;
-            margin: 0 auto 15px;
-            overflow: hidden;
-            border-radius: 15px;
-            border: 2px solid var(--biru-muda);
-            background: #000;
-        }
-
-        /* HASIL PENCARIAN */
-        .section-caption {
-            font-size: .72rem;
-            font-weight: 800;
-            color: var(--abu);
-            text-transform: uppercase;
-            letter-spacing: .8px;
-            margin: 0;
-        }
-
-        .list-group-item {
-            border: 1px solid var(--garis) !important;
-            border-radius: 13px !important;
-            margin-bottom: 10px;
-            padding: 15px;
-            background: #fff;
-            cursor: pointer;
-            transition: .2s;
-        }
-
-        .list-group-item:hover {
-            border-color: #B9CCF4 !important;
-            background: #FAFBFF;
-        }
-
-        .item-name {
-            font-size: .85rem;
-            font-weight: 700;
-            color: var(--biru);
-            overflow-wrap: anywhere;
-        }
-
-        .item-meta {
-            font-size: .72rem;
-            color: var(--abu);
-            margin-top: 5px;
-        }
-
-        /* DETAIL BARANG */
-        .card-detail {
-            display: none;
-            overflow: hidden;
-            margin-top: 18px;
-            background: #fff;
-            border: 1px solid var(--garis);
-            border-radius: 20px;
-            box-shadow: 0 8px 30px rgba(10, 25, 49, .06);
-            animation: fadeIn .3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .detail-banner {
-            background: linear-gradient(120deg, #0A1931, #185ADB);
-            padding: 22px 18px;
-            text-align: center;
-            color: white;
-        }
-
-        .detail-banner .detail-icon {
-            width: 55px;
-            height: 55px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 10px;
-            border-radius: 17px;
-            background: rgba(255,255,255,.12);
-            font-size: 1.7rem;
-        }
-
-        #resNama {
-            font-size: 1.12rem;
-            font-weight: 800;
-            margin-bottom: 5px;
-            overflow-wrap: anywhere;
-        }
-
-        #resKode {
-            font-size: .75rem;
-            color: #D6E2F5 !important;
-            margin: 0;
-        }
-
-        .detail-body {
-            padding: 20px;
-        }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 10px;
-        }
-
-        .info-box {
-            min-width: 0;
-            background: #F8FAFD;
-            border: 1px solid #EDF1F6;
-            border-radius: 13px;
-            padding: 13px;
-        }
-
-        .info-box.full {
-            grid-column: 1 / -1;
-        }
-
-        .info-label {
-            font-size: .65rem;
-            color: var(--abu);
-            text-transform: uppercase;
-            letter-spacing: .4px;
-            font-weight: 700;
-            margin-bottom: 6px;
-        }
-
-        .info-value {
-            font-size: .83rem;
-            font-weight: 600;
-            color: var(--teks);
-            overflow-wrap: anywhere;
-            margin: 0;
-            line-height: 1.6;
-        }
-
-        .stock-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 10px;
-            margin-top: 12px;
-        }
-
-        .stock-card {
-            text-align: center;
-            padding: 14px 5px;
-            border-radius: 13px;
-            background: #F5F8FE;
-            border: 1px solid #E8EDF7;
-        }
-
-        .stock-card .stock-label {
-            font-size: .65rem;
-            color: var(--abu);
-            font-weight: 600;
-        }
-
-        .stock-card .stock-value {
-            font-size: 1.25rem;
-            font-weight: 800;
-            margin-top: 4px;
-        }
-
-        .stock-total { color: var(--biru); }
-        .stock-used { color: #D97706; }
-        .stock-left { color: var(--hijau); }
-
-        .audit-panel {
-            background: #FFF9F0;
-            border: 1px solid #FCE5C7;
-            border-radius: 15px;
-            padding: 16px;
-            margin-top: 18px;
-        }
-
-        .audit-heading {
-            font-size: .82rem;
-            font-weight: 800;
-            color: var(--biru);
-            margin-bottom: 12px;
-        }
-
-        .form-select {
-            min-height: 48px;
-            border-radius: 11px;
-            font-size: .82rem;
-            box-shadow: none !important;
-        }
-
-        .btn-audit {
-            background: var(--hijau);
-            color: #fff;
-            min-height: 48px;
-            font-weight: 700;
-            border: 0;
-            border-radius: 11px;
-        }
-
-        .btn-audit:hover {
-            background: #166534;
-            color: #fff;
-        }
-
-        .btn-back {
-            min-height: 44px;
-            border-radius: 11px;
-            font-size: .8rem;
-            font-weight: 600;
-        }
-
-        /* MODAL TAMBAH BARANG */
-        .modal-content {
-            border: none;
-            border-radius: 20px;
-            box-shadow: 0 15px 50px rgba(10, 25, 49, .18);
-        }
-
-        .modal-header {
-            padding: 22px 22px 10px;
-        }
-
-        .modal-title {
-            font-size: .95rem;
-            font-weight: 800;
-            color: var(--biru);
-        }
-
-        .modal-body {
-            padding: 18px 22px;
-        }
-
-        .form-label {
-            font-size: .72rem;
-            font-weight: 700;
-            color: #536176;
-        }
-
-        .form-control {
-            min-height: 45px;
-            font-size: .82rem;
-            border-radius: 10px;
-            border-color: var(--garis);
-            box-shadow: none !important;
-        }
-
-        .form-control:focus {
-            border-color: var(--biru-muda);
-        }
-
-        .modal-footer {
-            padding: 10px 22px 22px;
-        }
-
-        .btn-save {
-            background: var(--biru-muda);
-            color: white;
-            font-weight: 700;
-            border: 0;
-            border-radius: 11px;
-            min-height: 49px;
-        }
-
-        .btn-save:hover {
-            background: var(--biru);
-            color: white;
-        }
-
-        /* LOADING */
-        .loading-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(255,255,255,.91);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            backdrop-filter: blur(3px);
-        }
-
-        .loading-box {
-            text-align: center;
-            padding: 25px;
-        }
-
-        .loading-box p {
-            color: var(--biru-muda);
-            font-size: .82rem;
-            font-weight: 700;
-            margin: 12px 0 0;
-        }
-
-        /* FOOTER */
-        .footer {
-            text-align: center;
-            padding: 23px 15px;
-            color: #8792A5;
-            font-size: .69rem;
-            line-height: 1.8;
-        }
-
-        .footer strong {
-            color: var(--biru);
-        }
-
-        @media (max-width: 575px) {
-            .kop-sekolah {
-                padding: 20px 12px 18px;
-            }
-
-            .kop-inner {
-                gap: 12px;
-            }
-
-            .logo-frame {
-                width: 70px;
-                height: 70px;
-                min-width: 70px;
-                padding: 4px;
-            }
-
-            .kop-yayasan {
-                font-size: .59rem;
-                letter-spacing: 1px;
-            }
-
-            .kop-text h1 {
-                font-size: .87rem;
-            }
-
-            .kop-alamat {
-                font-size: .63rem;
-                line-height: 1.5;
-            }
-
-            .kop-aplikasi {
-                font-size: .58rem;
-                padding: 5px 8px;
-                margin-top: 8px;
-            }
-
-            .main-container {
-                margin-top: 20px;
-                padding: 0 12px;
-            }
-
-            .welcome-title {
-                font-size: .97rem;
-            }
-
-            .welcome-subtitle {
-                font-size: .69rem;
-            }
-
-            .status-online {
-                font-size: .59rem;
-                padding: 6px 8px;
-            }
-
-            .panel {
-                padding: 14px;
-                border-radius: 15px;
-            }
-
-            .action-card {
-                padding: 11px;
-                gap: 9px;
-                min-height: 78px;
-            }
-
-            .action-icon {
-                width: 37px;
-                height: 37px;
-                min-width: 37px;
-                font-size: 1.1rem;
-                border-radius: 10px;
-            }
-
-            .action-title {
-                font-size: .73rem;
-            }
-
-            .action-desc {
-                font-size: .61rem;
-            }
-
-            .detail-body {
-                padding: 14px;
-            }
-
-            .info-box {
-                padding: 11px;
-            }
-        }
-
-        @media (max-width: 360px) {
-            .logo-frame {
-                width: 58px;
-                height: 58px;
-                min-width: 58px;
-            }
-
-            .kop-text h1 {
-                font-size: .77rem;
-            }
-
-            .quick-actions {
-                gap: 8px;
-            }
-
-            .action-card {
-                gap: 7px;
-                padding: 9px;
-            }
-
-            .action-desc {
-                font-size: .57rem;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#102a43">
+<title>Aplikasi Supervisi SMP Angkasa Husein</title>
+<style>
+:root{--navy:#102a43;--blue:#1d4ed8;--sky:#eaf2ff;--gold:#f5b942;--ink:#172b4d;--muted:#64748b;--line:#dbe4ef;--bg:#f4f7fb;--green:#13795b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,"Segoe UI",Arial,sans-serif;color:var(--ink)}
+header{background:linear-gradient(120deg,#102a43,#174a78);color:white;padding:22px 18px;box-shadow:0 5px 20px #102a4322}
+.head{max-width:1200px;margin:auto;display:flex;align-items:center;gap:16px}.logo{width:76px;height:76px;border-radius:50%;object-fit:cover;background:white;border:3px solid #fff;box-shadow:0 0 0 3px var(--gold)}
+h1{font-size:clamp(20px,3vw,29px);margin:0 0 5px;font-weight:800}.sub{margin:0;color:#dbeafe;font-size:14px;line-height:1.5}
+.wrap{max-width:1200px;margin:24px auto;padding:0 16px 40px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:18px;box-shadow:0 6px 22px #0f172a08}
+.login{max-width:440px;margin:8vh auto}.brandline{font-weight:800;color:var(--navy);font-size:20px;margin-bottom:7px}.muted{color:var(--muted);font-size:14px;line-height:1.55}
+label{display:block;font-size:13px;font-weight:700;margin-bottom:7px;color:#334155}input,select,textarea{width:100%;border:1px solid #cbd5e1;border-radius:9px;padding:11px 12px;font:inherit;color:var(--ink);background:white}input:focus,select:focus,textarea:focus{outline:3px solid #bfdbfe;border-color:var(--blue)}
+button{border:0;border-radius:9px;padding:11px 16px;font-weight:750;font-size:14px;cursor:pointer}.primary{background:var(--blue);color:white}.secondary{background:var(--sky);color:var(--blue)}button:disabled{opacity:.55;cursor:wait}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.hidden{display:none!important}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.wide{grid-column:span 2}.toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.tab{background:#e2e8f0;color:#334155}.tab.active{background:var(--navy);color:white}
+.section-title{font-size:19px;margin:0 0 5px}.section-sub{margin:0 0 18px;color:var(--muted);font-size:13px}
+.item{border:1px solid var(--line);border-radius:12px;padding:14px;margin:10px 0;background:#fff}.item-head{display:flex;gap:12px;align-items:flex-start}.num{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border-radius:10px;background:#eff6ff;color:#1d4ed8;font-weight:800;font-size:12px}.item-label{font-weight:700;line-height:1.5;padding-top:5px}
+.score-options{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 0 46px}.score{display:flex;align-items:center;gap:7px;border:1px solid #cbd5e1;border-radius:9px;padding:8px 10px;font-size:12px;cursor:pointer}.score input{width:auto;margin:0;accent-color:var(--blue)}
+.section-note{min-height:100px}.notice{padding:12px 14px;border-radius:10px;margin:12px 0;font-size:13px;line-height:1.5}.info{background:#eff6ff;color:#1e40af}.success{background:#dcfce7;color:#166534}.error{background:#fee2e2;color:#991b1b}.loading{opacity:.65;pointer-events:none}
+footer{text-align:center;color:#64748b;font-size:12px;padding:14px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.wide{grid-column:span 1}.head{align-items:flex-start}.logo{width:60px;height:60px}.card{padding:15px}.score-options{margin-left:0}}
+</style>
 </head>
-
 <body>
-
-<div class="loading-overlay" id="loader">
-    <div class="loading-box">
-        <div class="spinner-border text-primary" role="status"></div>
-        <p>Memproses data inventaris...</p>
-    </div>
-</div>
-
-<div class="content">
-
-    <!-- KOP SEKOLAH -->
-    <header class="kop-sekolah">
-        <div class="kop-inner">
-            <div class="logo-frame">
-                <img
-                    src="logo-sekolah.png"
-                    alt="Logo SMP Angkasa Husein Sastranegara"
-                    class="logo-sekolah"
-                    onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=&quot;color:#0A1931;font-weight:800;font-size:11px;text-align:center&quot;>LOGO<br>ANGKASA</span>';"
-                >
-            </div>
-
-            <div class="kop-text">
-                <p class="kop-yayasan">Yayasan Ardhya Garini</p>
-                <h1>SMP ANGKASA HUSEIN SASTRANEGARA</h1>
-                <p class="kop-alamat">
-                    Jl. Pajajaran No. 151, Kota Bandung
-                </p>
-                <div class="kop-aplikasi">
-                    <i class="bi bi-box-seam"></i>
-                    SISTEM INFORMASI SARANA DAN PRASARANA
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <main class="main-container">
-
-        <!-- SAPAAN -->
-        <div class="welcome-row">
-            <div>
-                <h2 class="welcome-title">Inventaris Sekolah</h2>
-                <p class="welcome-subtitle">
-                    Cari, periksa, dan kelola data aset sekolah.
-                </p>
-            </div>
-            <div class="status-online">
-                <span class="status-dot"></span>
-                e-SARPRAS
-            </div>
-        </div>
-
-        <!-- PENCARIAN -->
-        <section class="panel">
-            <div class="panel-heading">
-                <i class="bi bi-search me-2"></i>Cari Data Barang
-            </div>
-
-            <form id="formSearch">
-                <div class="input-group">
-                    <input
-                        type="text"
-                        id="inputSearch"
-                        class="form-control search-input"
-                        placeholder="Masukkan kode atau nama barang..."
-                        autocomplete="off"
-                    >
-                    <button class="btn btn-search" type="submit">
-                        <i class="bi bi-search me-1"></i> CARI
-                    </button>
-                </div>
-            </form>
-        </section>
-
-        <!-- AKSI UTAMA -->
-        <section class="panel">
-            <div class="panel-heading">
-                <i class="bi bi-grid me-2"></i>Menu Utama
-            </div>
-
-            <div class="quick-actions">
-                <button type="button" class="action-card" onclick="startScanner()">
-                    <span class="action-icon icon-blue">
-                        <i class="bi bi-qr-code-scan"></i>
-                    </span>
-                    <span>
-                        <span class="action-title">Scan QR Code</span>
-                        <span class="action-desc">Periksa barang melalui kamera</span>
-                    </span>
-                </button>
-
-                <button type="button" class="action-card" onclick="authAction('tambah')">
-                    <span class="action-icon icon-orange">
-                        <i class="bi bi-plus-circle"></i>
-                    </span>
-                    <span>
-                        <span class="action-title">Tambah Aset</span>
-                        <span class="action-desc">Daftarkan barang baru</span>
-                    </span>
-                </button>
-            </div>
-        </section>
-
-        <!-- PEMINDAI QR -->
-        <section id="scannerPanel" class="panel" style="display:none;">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div class="panel-heading mb-0">
-                    <i class="bi bi-camera me-2"></i>Pemindai QR Code
-                </div>
-                <button type="button" class="btn btn-sm btn-outline-secondary"
-                    onclick="stopScanner()">
-                    Tutup
-                </button>
-            </div>
-            <div id="reader"></div>
-            <p class="text-muted small text-center mb-0">
-                Arahkan kamera ke QR Code barang.
-            </p>
-        </section>
-
-        <!-- HASIL PENCARIAN -->
-        <section id="listResults" class="panel" style="display:none;">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <p class="section-caption">
-                    <i class="bi bi-list-ul me-1"></i>Hasil Pencarian
-                </p>
-                <button type="button"
-                    class="btn btn-sm btn-outline-secondary rounded-pill px-3"
-                    onclick="resetView()">
-                    Batal
-                </button>
-            </div>
-            <div id="itemsContainer"></div>
-        </section>
-
-        <!-- DETAIL BARANG -->
-        <section id="resultArea" class="card-detail">
-            <div class="detail-banner">
-                <div class="detail-icon">
-                    <i class="bi bi-box-seam"></i>
-                </div>
-                <h3 id="resNama"></h3>
-                <p id="resKode"></p>
-            </div>
-
-            <div class="detail-body">
-                <div class="info-grid">
-                    <div class="info-box">
-                        <div class="info-label">
-                            <i class="bi bi-geo-alt me-1"></i>Lokasi
-                        </div>
-                        <p id="resLokasi" class="info-value">-</p>
-                    </div>
-
-                    <div class="info-box">
-                        <div class="info-label">
-                            <i class="bi bi-shield-check me-1"></i>Kondisi
-                        </div>
-                        <p id="resKondisi" class="info-value">-</p>
-                    </div>
-                </div>
-
-                <div class="stock-grid">
-                    <div class="stock-card">
-                        <div class="stock-label">TOTAL</div>
-                        <div id="resJumlah" class="stock-value stock-total">0</div>
-                    </div>
-                    <div class="stock-card">
-                        <div class="stock-label">TERPAKAI</div>
-                        <div id="resTerpakai" class="stock-value stock-used">0</div>
-                    </div>
-                    <div class="stock-card">
-                        <div class="stock-label">SISA</div>
-                        <div id="resSisa" class="stock-value stock-left">0</div>
-                    </div>
-                </div>
-
-                <div class="info-grid mt-3">
-                    <div class="info-box full">
-                        <div class="info-label">
-                            <i class="bi bi-card-text me-1"></i>Keterangan Barang
-                        </div>
-                        <p id="resDeskripsi" class="info-value"
-                           style="font-weight:400;">Tidak ada keterangan.</p>
-                    </div>
-
-                    <div class="info-box full">
-                        <div class="info-label">
-                            <i class="bi bi-calendar-check me-1"></i>Terakhir Diverifikasi
-                        </div>
-                        <p id="resAudit" class="info-value">Belum pernah diaudit</p>
-                    </div>
-                </div>
-
-                <!-- AUDIT -->
-                <div class="audit-panel">
-                    <div class="audit-heading">
-                        <i class="bi bi-clipboard-check me-2"></i>
-                        Pemeriksaan Kondisi Barang
-                    </div>
-
-                    <label for="selectStatus" class="form-label">
-                        Pilih kondisi aktual barang
-                    </label>
-                    <select id="selectStatus" class="form-select mb-3">
-                        <option value="BAIK">BAIK</option>
-                        <option value="PERLU PERBAIKAN">PERLU PERBAIKAN</option>
-                        <option value="RUSAK">RUSAK TOTAL</option>
-                        <option value="HILANG">HILANG / TIDAK ADA</option>
-                    </select>
-
-                    <button type="button" class="btn btn-audit w-100"
-                        onclick="authAction('audit')">
-                        <i class="bi bi-check-circle me-2"></i>SIMPAN HASIL AUDIT
-                    </button>
-                </div>
-
-                <button type="button"
-                    class="btn btn-outline-secondary btn-back w-100 mt-3"
-                    onclick="resetView()">
-                    <i class="bi bi-arrow-left me-2"></i>KEMBALI KE PENCARIAN
-                </button>
-            </div>
-        </section>
-
-    </main>
-</div>
-
-<!-- MODAL TAMBAH ASET -->
-<div class="modal fade" id="modalTambah" tabindex="-1"
-    aria-labelledby="modalTambahLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-
-            <div class="modal-header border-0">
-                <div>
-                    <h5 id="modalTambahLabel" class="modal-title">
-                        <i class="bi bi-plus-circle me-2"></i>TAMBAH ASET BARU
-                    </h5>
-                    <small class="text-muted" style="font-size:.72rem;">
-                        Masukkan identitas awal barang.
-                    </small>
-                </div>
-                <button type="button" class="btn-close"
-                    data-bs-dismiss="modal" aria-label="Tutup"></button>
-            </div>
-
-            <form id="formTambah">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Kode Barang *</label>
-                        <input type="text" name="kode" class="form-control"
-                            required maxlength="100"
-                            placeholder="Contoh: INV-001">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Nama Barang *</label>
-                        <input type="text" name="nama" class="form-control"
-                            required maxlength="200"
-                            placeholder="Contoh: Laptop Lenovo">
-                    </div>
-
-                    <div class="mb-1">
-                        <label class="form-label">Deskripsi Singkat</label>
-                        <textarea name="deskripsi" class="form-control"
-                            rows="3" maxlength="1000"
-                            placeholder="Merek, spesifikasi, atau catatan barang..."></textarea>
-                    </div>
-
-                    <small class="text-muted">
-                        Kolom lain mengikuti pengaturan bawaan spreadsheet saat ini.
-                    </small>
-                </div>
-
-                <div class="modal-footer border-0">
-                    <button type="submit" class="btn btn-save w-100">
-                        <i class="bi bi-cloud-check me-2"></i>SIMPAN DATA BARANG
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<footer class="footer">
-    <strong>e-SARPRAS SMP ANGKASA HUSEIN SASTRANEGARA</strong><br>
-    Sistem Informasi Inventaris Sarana dan Prasarana Sekolah<br>
-    © 2026 · Dikembangkan untuk mendukung tata kelola aset sekolah
-</footer>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://unpkg.com/html5-qrcode"></script>
-
+<header><div class="head"><img class="logo" src="./logo-sekolah.png" alt="Logo SMP Angkasa" onerror="this.style.display='none'"><div><h1>Aplikasi Supervisi SMP Angkasa Husein</h1><p class="sub">SMP ANGKASA LANUD HUSEIN SASTRANEGARA<br>Supervisi akademik • Administrasi • Proses pembelajaran • Modul ajar</p></div></div></header>
+<main class="wrap">
+<section id="loginCard" class="card login">
+  <div class="brandline">Masuk ke aplikasi</div><p class="muted">Masukkan password untuk membuka instrumen supervisi guru.</p>
+  <form id="loginForm"><label for="password">Password aplikasi</label><input id="password" type="password" autocomplete="current-password" placeholder="Masukkan password" required><div class="btnrow"><button class="primary" id="loginBtn" type="submit">Masuk</button></div></form>
+  <div id="loginMsg" aria-live="polite"></div>
+</section>
+<section id="app" class="hidden">
+  <div class="card">
+    <div class="toolbar"><div><h2 style="margin:0 0 5px">Formulir Supervisi Guru</h2><div class="muted">Pilih guru, lengkapi identitas, beri skor, lalu simpan.</div></div><button id="logoutBtn" class="secondary">Keluar</button></div>
+    <div class="grid" style="margin-top:18px">
+      <div><label for="teacher">Nama guru / sheet</label><select id="teacher"><option value="">Pilih guru...</option></select></div>
+      <div><label for="name">Nama guru</label><input id="name"></div><div><label for="nuptk">NUPTK / NIP</label><input id="nuptk"></div>
+      <div><label for="subject">Mata pelajaran</label><input id="subject"></div><div><label for="classInfo">Kelas / Semester / Tahun Pelajaran</label><input id="classInfo" placeholder="Contoh: IX C / Ganjil / 2026-2027"></div><div><label for="date">Tanggal supervisi</label><input id="date" placeholder="Contoh: 28 Oktober 2026"></div>
+      <div class="wide"><label for="materi">Materi pokok pembelajaran</label><input id="materi"></div><div class="wide"><label for="tujuan">Tujuan pembelajaran</label><textarea id="tujuan" rows="2"></textarea></div>
+    </div><div id="status" aria-live="polite"></div>
+  </div>
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-section="administrasi">1. Administrasi Pembelajaran</button>
+    <button class="tab" data-section="proses">2. Pengamatan Proses Kurmer</button>
+    <button class="tab" data-section="modul">3. Kelengkapan Modul Ajar</button>
+  </div>
+  <div id="sectionPanel" class="card"><p class="muted">Pilih guru untuk memuat instrumen.</p></div>
+  <div class="card"><div class="toolbar"><div><strong>Simpan hasil supervisi</strong><div class="muted">0 = Tidak Ada • 1 = Ada tetapi Tidak Sesuai • 2 = Ada dan Sesuai</div></div><button class="primary" id="saveBtn" disabled>Simpan ke Google Sheets</button></div></div>
+</section>
+<footer>© SMP Angkasa Lanud Husein Sastranegara • Aplikasi Supervisi SMP Angkasa Husein</footer>
+</main>
 <script>
-    // URL API DIPERTAHANKAN
-    const WEB_APP_URL =
-        "https://script.google.com/macros/s/AKfycby6PX0Rej8RJArTjXpM_LO6CFyHnAGY0QRoapvO7QrNTP2-x3eq-TWbv_LmSiIeegT3/exec";
+/* KONFIGURASI: ganti dengan URL Cloudflare Worker Anda setelah deploy. */
+const API_URL = 'https://supervisi-angkasa.smpangkasahsn-151.workers.dev';
+const LABELS = {
+  administrasi:'Instrumen Telaah Administrasi Pembelajaran',
+  proses:'Instrumen Pengamatan Proses Pembelajaran Kurmer',
+  modul:'Kelengkapan Modul Ajar'
+};
+let PASSWORD='', currentTeacher='', currentData=null, activeSection='administrasi', isBusy=false;
 
-    // PIN masih menggunakan mekanisme lama.
-    // Pengamanan sisi server perlu diterapkan pada Code.gs secara terpisah.
-    const PIN_AKSES = "sarprasangkasa";
-
-    let myModal = new bootstrap.Modal(document.getElementById('modalTambah'));
-    let searchData = [];
-    let scanner = null;
-    let itemAktif = null;
-
-    // Form pencarian
-    document.getElementById('formSearch').addEventListener('submit', function(e) {
-        e.preventDefault();
-        fetchData(document.getElementById('inputSearch').value);
+const $ = id => document.getElementById(id);
+function esc(value){return String(value ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function showMsg(id,message,type='info'){ $(id).innerHTML=`<div class="notice ${type}">${esc(message)}</div>`; }
+async function api(action,extra={}) {
+  if(!API_URL || API_URL.startsWith('GANTI_')) throw new Error('API_URL belum diatur. Tempel URL Cloudflare Worker pada script.js di bagian konfigurasi.');
+  const response = await fetch(API_URL,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action,password:PASSWORD,...extra})
+  });
+  if(!response.ok) throw new Error('Server mengembalikan HTTP '+response.status);
+  const result = await response.json();
+  if(!result.ok) throw new Error(result.error || 'Permintaan gagal.');
+  return result.data;
+}
+function setBusy(value){
+  isBusy=value; document.body.classList.toggle('loading',value);
+  $('loginBtn').disabled=value; $('saveBtn').disabled=value || !currentTeacher;
+}
+$('loginForm').addEventListener('submit',async e=>{
+  e.preventDefault(); PASSWORD=$('password').value.trim();
+  if(!PASSWORD){showMsg('loginMsg','Masukkan password terlebih dahulu.','error');return;}
+  setBusy(true);
+  try{
+    const result=await api('init');
+    $('teacher').innerHTML='<option value="">Pilih guru...</option>'+result.teachers.map(t=>`<option value="${esc(t.sheet)}">${esc(t.name)}${t.subject?' — '+esc(t.subject):''}${t.missing?' (sheet tidak ditemukan)':''}</option>`).join('');
+    $('loginCard').classList.add('hidden'); $('app').classList.remove('hidden');
+    showMsg('status','Berhasil masuk. Pilih nama guru untuk memulai.','success');
+  }catch(err){PASSWORD='';showMsg('loginMsg',err.message,'error');}
+  finally{setBusy(false);}
+});
+$('logoutBtn').addEventListener('click',()=>{
+  PASSWORD='';currentTeacher='';currentData=null;$('app').classList.add('hidden');$('loginCard').classList.remove('hidden');$('password').value='';
+  $('teacher').innerHTML='<option value="">Pilih guru...</option>';$('sectionPanel').innerHTML='<p class="muted">Pilih guru untuk memuat instrumen.</p>';$('status').innerHTML='';
+});
+$('teacher').addEventListener('change',loadTeacher);
+$('tabs').addEventListener('click',e=>{
+  const button=e.target.closest('[data-section]');if(!button)return;
+  activeSection=button.dataset.section;
+  document.querySelectorAll('.tab').forEach(tab=>tab.classList.toggle('active',tab===button));
+  renderSection();
+});
+async function loadTeacher(){
+  const teacher=$('teacher').value;if(!teacher)return;
+  setBusy(true);
+  try{
+    currentData=await api('load',{teacher});currentTeacher=teacher;
+    fillIdentity();renderSection();$('saveBtn').disabled=false;
+    showMsg('status',`Data ${currentData.name} berhasil dimuat. Perubahan baru tersimpan setelah tombol Simpan ditekan.`,'info');
+  }catch(err){currentTeacher='';currentData=null;$('saveBtn').disabled=true;showMsg('status',err.message,'error');}
+  finally{setBusy(false);}
+}
+function fillIdentity(){
+  ['name','nuptk','subject','classInfo','date','materi','tujuan'].forEach(key=>$(key).value=currentData[key]||'');
+}
+function collectData(){
+  const data={};
+  ['name','nuptk','subject','classInfo','date','materi','tujuan'].forEach(key=>data[key]=$(key).value);
+  data.sections={};
+  Object.keys(LABELS).forEach(key=>{
+    const section=currentData.sections[key], noteElement=$('note-'+key);
+    data.sections[key]={scores:{},note:noteElement ? noteElement.value : (section.note||'')};
+    section.items.forEach(item=>{
+      const checked=document.querySelector(`input[name="${key}-${item.row}"]:checked`);
+      if(checked)data.sections[key].scores[String(item.row)]=Number(checked.value);
     });
-
-    function authAction(tipe) {
-        const pass = prompt("Masukkan Password Khusus Petugas:");
-        if (pass === null) return;
-
-        if (pass !== PIN_AKSES) {
-            alert("Password salah! Akses ditolak.");
-            return;
-        }
-
-        if (tipe === 'tambah') {
-            myModal.show();
-        } else if (tipe === 'audit') {
-            prosesSimpanAudit();
-        }
-    }
-
-    // SCAN QR
-    async function startScanner() {
-        const panel = document.getElementById('scannerPanel');
-        panel.style.display = 'block';
-        panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-        if (scanner) {
-            try {
-                await scanner.stop();
-            } catch (e) {}
-            scanner = null;
-        }
-
-        scanner = new Html5Qrcode("reader");
-
-        try {
-            await scanner.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 230, height: 230 } },
-                async function(text) {
-                    await stopScanner();
-                    document.getElementById('inputSearch').value = text;
-                    fetchData(text);
-                }
-            );
-        } catch (e) {
-            alert("Kamera tidak dapat diakses. Pastikan izin kamera diberikan dan halaman menggunakan HTTPS.");
-            await stopScanner();
-        }
-    }
-
-    async function stopScanner() {
-        if (scanner) {
-            try {
-                if (scanner.isScanning) await scanner.stop();
-                scanner.clear();
-            } catch (e) {}
-            scanner = null;
-        }
-        document.getElementById('scannerPanel').style.display = 'none';
-    }
-
-    // PENCARIAN BARANG
-    async function fetchData(keyword) {
-        keyword = String(keyword || '').trim();
-        if (!keyword) {
-            alert("Silakan masukkan kode atau nama barang terlebih dahulu.");
-            return;
-        }
-
-        showLoader(true);
-        resetView();
-
-        try {
-            const resp = await fetch(WEB_APP_URL, {
-                method: 'POST',
-                body: JSON.stringify({
-                    action: 'getBarang',
-                    data: keyword
-                })
-            });
-
-            const res = await resp.json();
-
-            if (res.status === "success" && Array.isArray(res.results)) {
-                searchData = res.results;
-
-                if (searchData.length === 1) {
-                    showDetail(0);
-                } else {
-                    renderSearchResults();
-                }
-            } else {
-                alert("Maaf, barang '" + keyword + "' tidak ditemukan di database.");
-            }
-        } catch (e) {
-            alert("Terjadi gangguan koneksi ke Google Sheets. Periksa koneksi internet dan URL Web App.");
-        } finally {
-            showLoader(false);
-        }
-    }
-
-    function renderSearchResults() {
-        const container = document.getElementById('itemsContainer');
-        container.replaceChildren();
-
-        searchData.forEach(function(item, index) {
-            const card = document.createElement('button');
-            card.type = 'button';
-            card.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center text-start';
-
-            const left = document.createElement('div');
-            left.style.minWidth = '0';
-
-            const name = document.createElement('div');
-            name.className = 'item-name';
-            name.textContent = item.nama || 'Tanpa nama';
-
-            const meta = document.createElement('div');
-            meta.className = 'item-meta';
-            meta.textContent = (item.kode || '-') + ' | Lokasi: ' + (item.lokasi || 'Tidak ada');
-
-            left.appendChild(name);
-            left.appendChild(meta);
-
-            const icon = document.createElement('i');
-            icon.className = 'bi bi-chevron-right text-primary ms-2';
-
-            card.appendChild(left);
-            card.appendChild(icon);
-            card.addEventListener('click', function() {
-                showDetail(index);
-            });
-
-            container.appendChild(card);
-        });
-
-        document.getElementById('listResults').style.display = 'block';
-    }
-
-    // DETAIL BARANG
-    function showDetail(index) {
-        const item = searchData[index];
-        if (!item) return;
-
-        itemAktif = item;
-
-        document.getElementById('listResults').style.display = 'none';
-        document.getElementById('resNama').textContent = item.nama || '-';
-        document.getElementById('resKode').textContent = 'KODE BARANG: ' + (item.kode || '-');
-        document.getElementById('resLokasi').textContent = item.lokasi || '-';
-        document.getElementById('resKondisi').textContent = item.kondisi || 'BAIK';
-        document.getElementById('resJumlah').textContent = item.jumlah ?? '0';
-        document.getElementById('resTerpakai').textContent = item.terpakai ?? '0';
-        document.getElementById('resSisa').textContent = item.sisa ?? '0';
-        document.getElementById('resDeskripsi').textContent = item.deskripsi || 'Tidak ada keterangan.';
-        document.getElementById('resAudit').textContent = item.audit || 'Belum pernah diaudit';
-
-        const status = document.getElementById('selectStatus');
-        const kondisi = String(item.kondisi || 'BAIK').toUpperCase();
-        const pilihanAda = Array.from(status.options).some(function(opt) {
-            return opt.value === kondisi;
-        });
-        status.value = pilihanAda ? kondisi : 'BAIK';
-
-        document.getElementById('resultArea').style.display = 'block';
-        document.getElementById('resultArea').scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-        });
-    }
-
-    function resetView() {
-        document.getElementById('listResults').style.display = 'none';
-        document.getElementById('resultArea').style.display = 'none';
-        document.getElementById('itemsContainer').replaceChildren();
-        searchData = [];
-        itemAktif = null;
-    }
-
-    // AUDIT BARANG
-    async function prosesSimpanAudit() {
-        if (!itemAktif || !itemAktif.kode) {
-            alert("Pilih barang yang akan diaudit terlebih dahulu.");
-            return;
-        }
-
-        const kode = String(itemAktif.kode).trim();
-        const status = document.getElementById('selectStatus').value;
-
-        if (!confirm(
-            "Simpan hasil pemeriksaan barang ini?\n\n" +
-            "Nama: " + itemAktif.nama + "\n" +
-            "Kode: " + kode + "\n" +
-            "Kondisi: " + status
-        )) return;
-
-        showLoader(true);
-
-        try {
-            const resp = await fetch(WEB_APP_URL, {
-                method: 'POST',
-                body: JSON.stringify({
-                    action: 'auditBarang',
-                    kode: kode,
-                    status: status
-                })
-            });
-
-            const res = await resp.json();
-
-            if (res.status === "success") {
-                alert("Data audit berhasil disimpan.");
-                await fetchData(kode);
-            } else {
-                alert(res.message || "Audit gagal disimpan. Silakan periksa data barang.");
-            }
-        } catch (e) {
-            alert("Gagal menyimpan audit. Periksa koneksi internet.");
-        } finally {
-            showLoader(false);
-        }
-    }
-
-    // TAMBAH BARANG
-    document.getElementById('formTambah').addEventListener('submit', async function(e) {
-        e.preventDefault();
-
-        const fd = Object.fromEntries(new FormData(this));
-        fd.kode = String(fd.kode || '').trim();
-        fd.nama = String(fd.nama || '').trim();
-        fd.deskripsi = String(fd.deskripsi || '').trim();
-
-        if (!fd.kode || !fd.nama) {
-            alert("Kode dan nama barang wajib diisi.");
-            return;
-        }
-
-        showLoader(true);
-
-        try {
-            const resp = await fetch(WEB_APP_URL, {
-                method: 'POST',
-                body: JSON.stringify({
-                    action: 'addBarang',
-                    data: fd
-                })
-            });
-
-            const res = await resp.json();
-
-            if (res.status === "success") {
-                alert("Aset baru berhasil ditambahkan.");
-                myModal.hide();
-                this.reset();
-                document.getElementById('inputSearch').value = fd.kode;
-                await fetchData(fd.kode);
-            } else {
-                alert(res.message || "Data barang gagal disimpan.");
-            }
-        } catch (e) {
-            alert("Gagal menyimpan data baru. Periksa koneksi internet dan URL Web App.");
-        } finally {
-            showLoader(false);
-        }
-    });
-
-    function showLoader(tampil) {
-        document.getElementById('loader').style.display = tampil ? 'flex' : 'none';
-    }
+  });
+  return data;
+}
+function renderSection(){
+  if(!currentData)return;
+  const section=currentData.sections[activeSection];
+  let html=`<h3 class="section-title">${esc(LABELS[activeSection])}</h3><p class="section-sub">Pilih satu skor untuk setiap butir. Butir yang belum dinilai boleh dibiarkan kosong.</p>`;
+  section.items.forEach((item,index)=>{
+    html+=`<div class="item"><div class="item-head"><div class="num">${index+1}</div><div class="item-label">${esc(item.label)}</div></div><div class="score-options">`+
+    [[0,'Tidak Ada'],[1,'Ada tetapi Tidak Sesuai'],[2,'Ada dan Sesuai']].map(([score,label])=>
+      `<label class="score"><input type="radio" name="${activeSection}-${item.row}" value="${score}" ${item.score===score?'checked':''}><span><b>${score}</b> · ${label}</span></label>`
+    ).join('')+`</div></div>`;
+  });
+  html+=`<div style="margin-top:20px"><label for="note-${activeSection}">Catatan kepala sekolah / supervisor</label><textarea id="note-${activeSection}" class="section-note" placeholder="Tuliskan catatan, umpan balik, dan tindak lanjut...">${esc(section.note||'')}</textarea></div>`;
+  $('sectionPanel').innerHTML=html;
+}
+$('saveBtn').addEventListener('click',async()=>{
+  if(!currentTeacher||!currentData){showMsg('status','Pilih guru terlebih dahulu.','error');return;}
+  setBusy(true);
+  try{
+    const result=await api('save',{teacher:currentTeacher,data:collectData()});
+    showMsg('status',result.message||'Data berhasil disimpan.','success');
+    currentData=await api('load',{teacher:currentTeacher});fillIdentity();renderSection();
+  }catch(err){showMsg('status',err.message,'error');}
+  finally{setBusy(false);}
+});
 </script>
-
 </body>
 </html>
