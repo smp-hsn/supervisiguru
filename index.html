@@ -24,6 +24,28 @@ button{border:0;border-radius:9px;padding:11px 16px;font-weight:750;font-size:14
 .section-note{min-height:100px}.notice{padding:12px 14px;border-radius:10px;margin:12px 0;font-size:13px;line-height:1.5}.info{background:#eff6ff;color:#1e40af}.success{background:#dcfce7;color:#166534}.error{background:#fee2e2;color:#991b1b}.loading{opacity:.65;pointer-events:none}
 footer{text-align:center;color:#64748b;font-size:12px;padding:14px}
 @media(max-width:760px){.grid{grid-template-columns:1fr}.wide{grid-column:span 1}.head{align-items:flex-start}.logo{width:60px;height:60px}.card{padding:15px}.score-options{margin-left:0}}
+
+/* Fitur laporan, grafik, dan catatan otomatis */
+.feature-card h3{margin:0 0 8px}.feature-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.report-panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:14px}
+.chart-wrap{max-width:850px;width:100%;margin:10px auto}.chart-wrap canvas{width:100%;height:320px;display:block}
+.report-table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}
+.report-table th,.report-table td{border:1px solid #cbd5e1;padding:8px;text-align:left;vertical-align:top}
+.report-table th{background:#eff6ff}
+@media(max-width:760px){.chart-wrap canvas{height:260px}}
+@media print{
+ body{background:white!important;color:#111!important;font-size:11pt}
+ body *{visibility:hidden!important}
+ #printReport,#printReport *{visibility:visible!important}
+ #printReport{display:block!important;position:absolute;left:0;top:0;width:100%;padding:0;margin:0;border:0;box-shadow:none}
+ #printReport h1{font-size:18pt;color:#102a43}
+ #printReport h2{font-size:14pt}
+ #printReport .report-table{font-size:9pt}
+ #printReport .report-table th{background:#eaf2ff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ .no-print{display:none!important}
+ @page{size:A4;margin:15mm}
+}
+
 </style>
 </head>
 <body>
@@ -51,6 +73,13 @@ footer{text-align:center;color:#64748b;font-size:12px;padding:14px}
   </div>
   <div id="sectionPanel" class="card"><p class="muted">Pilih guru untuk memuat instrumen.</p></div>
   <div class="card"><div class="toolbar"><div><strong>Simpan hasil supervisi</strong><div class="muted">0 = Tidak Ada • 1 = Ada tetapi Tidak Sesuai • 2 = Ada dan Sesuai</div></div><button class="primary" id="saveBtn" disabled>Simpan ke Google Sheets</button></div></div>
+  <div class="card feature-card no-print">
+    <h3>Laporan dan Analisis Supervisi</h3>
+    <p class="muted">Pilih guru dan simpan hasil terlebih dahulu. Laporan dapat dicetak atau disimpan menjadi PDF melalui pilihan printer "Save as PDF".</p>
+    <div class="feature-actions"><button class="primary" id="printBtn" disabled>Cetak / Simpan PDF Guru</button><button class="secondary" id="chartBtn" disabled>Tampilkan Grafik Hasil</button></div>
+    <div id="chartPanel" class="report-panel hidden"><h3>Grafik Hasil Supervisi</h3><p class="muted" id="chartCaption"></p><div class="chart-wrap"><canvas id="resultChart" width="850" height="320" aria-label="Grafik hasil tiga instrumen supervisi"></canvas></div><div id="chartSummary" class="muted"></div></div>
+  </div>
+  <div id="printReport" class="hidden"></div>
 </section>
 <footer>© SMP Angkasa Lanud Husein Sastranegara • Aplikasi Supervisi SMP Angkasa Husein</footer>
 </main>
@@ -97,7 +126,7 @@ $('loginForm').addEventListener('submit',async e=>{
 });
 $('logoutBtn').addEventListener('click',()=>{
   PASSWORD='';currentTeacher='';currentData=null;$('app').classList.add('hidden');$('loginCard').classList.remove('hidden');$('password').value='';
-  $('teacher').innerHTML='<option value="">Pilih guru...</option>';$('sectionPanel').innerHTML='<p class="muted">Pilih guru untuk memuat instrumen.</p>';$('status').innerHTML='';
+  $('teacher').innerHTML='<option value="">Pilih guru...</option>';$('sectionPanel').innerHTML='<p class="muted">Pilih guru untuk memuat instrumen.</p>';$('status').innerHTML='';$('printBtn').disabled=true;$('chartBtn').disabled=true;$('chartPanel').classList.add('hidden');
 });
 $('teacher').addEventListener('change',loadTeacher);
 $('tabs').addEventListener('click',e=>{
@@ -111,7 +140,7 @@ async function loadTeacher(){
   setBusy(true);
   try{
     currentData=await api('load',{teacher});currentTeacher=teacher;
-    fillIdentity();renderSection();$('saveBtn').disabled=false;
+    fillIdentity();renderSection();$('saveBtn').disabled=false;$('printBtn').disabled=false;$('chartBtn').disabled=false;
     showMsg('status',`Data ${currentData.name} berhasil dimuat. Perubahan baru tersimpan setelah tombol Simpan ditekan.`,'info');
   }catch(err){currentTeacher='';currentData=null;$('saveBtn').disabled=true;showMsg('status',err.message,'error');}
   finally{setBusy(false);}
@@ -129,6 +158,7 @@ function collectData(){
     section.items.forEach(item=>{
       const checked=document.querySelector(`input[name="${key}-${item.row}"]:checked`);
       if(checked)data.sections[key].scores[String(item.row)]=Number(checked.value);
+      else if(item.score===0 || item.score===1 || item.score===2)data.sections[key].scores[String(item.row)]=Number(item.score);
     });
   });
   return data;
@@ -143,9 +173,67 @@ function renderSection(){
       `<label class="score"><input type="radio" name="${activeSection}-${item.row}" value="${score}" ${item.score===score?'checked':''}><span><b>${score}</b> · ${label}</span></label>`
     ).join('')+`</div></div>`;
   });
-  html+=`<div style="margin-top:20px"><label for="note-${activeSection}">Catatan kepala sekolah / supervisor</label><textarea id="note-${activeSection}" class="section-note" placeholder="Tuliskan catatan, umpan balik, dan tindak lanjut...">${esc(section.note||'')}</textarea></div>`;
+  html+=`<div style="margin-top:20px"><label for="note-${activeSection}">Catatan kepala sekolah / supervisor</label><textarea id="note-${activeSection}" class="section-note" placeholder="Tuliskan catatan, umpan balik, dan tindak lanjut...">${esc(section.note||'')}</textarea><div class="btnrow no-print"><button type="button" class="secondary" id="autoNoteBtn">Bantu Buat Catatan Otomatis</button></div><p class="muted">Draf ini disusun dari skor yang dipilih, bukan hasil AI online. Periksa dan sesuaikan dengan pengamatan nyata sebelum menyimpan.</p></div>`;
   $('sectionPanel').innerHTML=html;
 }
+
+function getSectionStats(sectionKey,data=collectData()){
+ const section=(data.sections||{})[sectionKey]||{scores:{}},items=(currentData?.sections?.[sectionKey]?.items)||[];
+ let total=0,count=0,good=0,needs=0,absent=0;
+ items.forEach(item=>{const raw=section.scores?.[String(item.row)];if(raw===undefined||raw===null||raw==='')return;const score=Number(raw);if(!Number.isFinite(score))return;total+=score;count++;if(score===2)good++;else if(score===1)needs++;else if(score===0)absent++;});
+ return {total,count,good,needs,absent,percent:count?Math.round(total/(count*2)*100):0};
+}
+function makeAutomaticNote(){
+ if(!currentData)return;
+ const data=collectData(),stats=getSectionStats(activeSection,data);
+ const sectionName=LABELS[activeSection].replace(/^Instrumen /,'').replace(/^Kelengkapan /,'');
+ let note='';
+ if(!stats.count) note=`Pada bagian ${sectionName.toLowerCase()}, penilaian belum diisi. Mohon lengkapi skor berdasarkan bukti hasil supervisi agar umpan balik dan tindak lanjut dapat disusun secara tepat.`;
+ else {
+  const opening=stats.percent>=80?'Secara umum, hasil telaah menunjukkan bahwa sebagian besar aspek telah terpenuhi dengan baik.':stats.percent>=50?'Hasil telaah menunjukkan beberapa aspek sudah terpenuhi, namun masih ada bagian yang perlu diperkuat.':'Hasil telaah menunjukkan masih terdapat sejumlah aspek penting yang perlu menjadi prioritas perbaikan.';
+  const strength=stats.good?` Apresiasi diberikan pada ${stats.good} butir yang telah sesuai dengan kriteria.`:' Perlu mulai mengidentifikasi aspek yang sudah berjalan baik sebagai modal perbaikan.';
+  let focus=stats.absent?` Prioritas pertama adalah menindaklanjuti ${stats.absent} butir yang belum tersedia.`:'';
+  if(stats.needs)focus+=` Selain itu, ${stats.needs} butir yang sudah tersedia perlu disesuaikan kembali dengan kriteria yang diharapkan.`;
+  const follow=stats.percent>=80?' Pertahankan praktik yang sudah baik dan lakukan penyempurnaan secara berkala.':' Disarankan menyusun langkah tindak lanjut yang realistis, menentukan waktu penyelesaian, dan meninjau kembali hasil perbaikannya pada supervisi berikutnya.';
+  note=opening+strength+focus+follow;
+ }
+ const textarea=$('note-'+activeSection);if(textarea){textarea.value=note;textarea.focus();showMsg('status','Draf catatan otomatis dibuat. Silakan periksa dan sesuaikan dengan kondisi nyata sebelum menyimpan.','info');}
+}
+function drawResultsChart(){
+ if(!currentData)return;
+ const data=collectData(),keys=Object.keys(LABELS);
+ const stats=keys.map(key=>({key,label:LABELS[key].replace('Instrumen ','').replace('Pengamatan ','').replace('Kelengkapan ',''),...getSectionStats(key,data)}));
+ $('chartPanel').classList.remove('hidden');
+ $('chartCaption').textContent=`Hasil untuk ${data.name||currentData.name||'guru terpilih'} — persentase dihitung dari skor yang sudah diisi (0–2).`;
+ const canvas=$('resultChart'),ctx=canvas.getContext('2d'),cssWidth=Math.max(300,canvas.parentElement.clientWidth||850),ratio=window.devicePixelRatio||1;
+ canvas.width=cssWidth*ratio;canvas.height=320*ratio;canvas.style.height='320px';ctx.scale(ratio,ratio);
+ const w=cssWidth,h=320,left=44,right=16,top=22,bottom=72,plotH=h-top-bottom,plotW=w-left-right;ctx.clearRect(0,0,w,h);ctx.font='12px Arial';ctx.textAlign='right';ctx.textBaseline='middle';
+ for(let pct=0;pct<=100;pct+=20){const y=top+plotH-(pct/100)*plotH;ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(w-right,y);ctx.stroke();ctx.fillStyle='#64748b';ctx.fillText(pct+'%',left-8,y);}
+ const slot=plotW/stats.length,barW=Math.min(90,slot*.48);
+ stats.forEach((st,i)=>{const x=left+i*slot+(slot-barW)/2,barH=plotH*st.percent/100,y=top+plotH-barH;ctx.fillStyle='#2563eb';ctx.fillRect(x,y,barW,barH);ctx.fillStyle='#102a43';ctx.textAlign='center';ctx.font='bold 12px Arial';ctx.fillText(st.count?st.percent+'%':'Belum ada skor',x+barW/2,Math.max(12,y-10));ctx.fillStyle='#334155';ctx.font='11px Arial';const words=st.label.split(' ');let lines=[],line='';words.forEach(word=>{if((line+' '+word).trim().length>17){lines.push(line);line=word}else line=(line+' '+word).trim()});if(line)lines.push(line);lines.forEach((ln,j)=>ctx.fillText(ln,x+barW/2,top+plotH+20+j*14));});
+ $('chartSummary').innerHTML=stats.map(st=>`<div><b>${esc(LABELS[st.key])}:</b> ${st.count?`${st.percent}% (${st.count} butir dinilai; ${st.good} sesuai, ${st.needs} perlu penyesuaian, ${st.absent} belum tersedia)`:'belum ada skor yang diisi'}</div>`).join('');
+}
+function buildPrintableReport(){
+ if(!currentData)return;
+ const data=collectData(),keys=Object.keys(LABELS),stats=keys.map(key=>({key,...getSectionStats(key,data)}));
+ const overallCount=stats.reduce((n,x)=>n+x.count,0),overallTotal=stats.reduce((n,x)=>n+x.total,0),overallPercent=overallCount?Math.round(overallTotal/(overallCount*2)*100):0;
+ let html=`<h1>Laporan Hasil Supervisi Guru</h1><h2>SMP Angkasa Lanud Husein Sastranegara</h2><table class="report-table"><tbody>
+ <tr><th style="width:28%">Nama Guru</th><td>${esc(data.name)}</td><th>NUPTK / NIP</th><td>${esc(data.nuptk)}</td></tr>
+ <tr><th>Mata Pelajaran</th><td>${esc(data.subject)}</td><th>Kelas/Semester/Tahun</th><td>${esc(data.classInfo)}</td></tr>
+ <tr><th>Tanggal Supervisi</th><td colspan="3">${esc(data.date)}</td></tr><tr><th>Materi Pokok</th><td colspan="3">${esc(data.materi)}</td></tr><tr><th>Tujuan Pembelajaran</th><td colspan="3">${esc(data.tujuan)}</td></tr></tbody></table>
+ <h2>Ringkasan Hasil</h2><p>Persentase keseluruhan butir yang dinilai: <b>${overallCount?overallPercent+'%':'Belum ada skor'}</b> (${overallCount} butir dinilai).</p>
+ <table class="report-table"><thead><tr><th>Instrumen</th><th>Persentase</th><th>Butir Dinilai</th><th>Sesuai (2)</th><th>Perlu Penyesuaian (1)</th><th>Tidak Ada (0)</th></tr></thead><tbody>`;
+ stats.forEach(st=>html+=`<tr><td>${esc(LABELS[st.key])}</td><td>${st.count?st.percent+'%':'-'}</td><td>${st.count}</td><td>${st.good}</td><td>${st.needs}</td><td>${st.absent}</td></tr>`);
+ html+='</tbody></table><h2>Catatan dan Tindak Lanjut</h2>';
+ keys.forEach(key=>{const note=data.sections?.[key]?.note||'Belum ada catatan.';html+=`<h3>${esc(LABELS[key])}</h3><p style="white-space:pre-wrap">${esc(note)}</p>`;});
+ html+=`<div style="margin-top:42px;display:flex;justify-content:flex-end;text-align:center"><div style="width:240px">Kepala Sekolah / Supervisor<br><br><br><br><b>(........................................)</b></div></div><p style="font-size:9pt;color:#64748b;margin-top:24px">Laporan dibuat berdasarkan skor dan catatan yang tampil pada aplikasi saat laporan dicetak.</p>`;
+ $('printReport').innerHTML=html;
+}
+document.addEventListener('click',e=>{if(e.target?.id==='autoNoteBtn')makeAutomaticNote();});
+$('printBtn').addEventListener('click',()=>{if(!currentTeacher)return;buildPrintableReport();window.print();});
+$('chartBtn').addEventListener('click',drawResultsChart);
+window.addEventListener('resize',()=>{if(!$('chartPanel')?.classList.contains('hidden')&&currentData)drawResultsChart();});
+
 $('saveBtn').addEventListener('click',async()=>{
   if(!currentTeacher||!currentData){showMsg('status','Pilih guru terlebih dahulu.','error');return;}
   setBusy(true);
