@@ -126,7 +126,7 @@ $('loginForm').addEventListener('submit',async e=>{
 });
 $('logoutBtn').addEventListener('click',()=>{
   PASSWORD='';currentTeacher='';currentData=null;$('app').classList.add('hidden');$('loginCard').classList.remove('hidden');$('password').value='';
-  $('teacher').innerHTML='<option value="">Pilih guru...</option>';$('sectionPanel').innerHTML='<p class="muted">Pilih guru untuk memuat instrumen.</p>';$('status').innerHTML='';$('printBtn').disabled=true;$('chartBtn').disabled=true;$('chartPanel').classList.add('hidden');
+  $('teacher').innerHTML='<option value="">Pilih guru...</option>';$('sectionPanel').innerHTML='<p class="muted">Pilih guru untuk memuat instrumen.</p>';$('status').innerHTML='';$('printBtn').disabled=true;$('chartBtn').disabled=true;$('chartPanel').classList.add('hidden');$('saveBtn').disabled=true;
 });
 $('teacher').addEventListener('change',loadTeacher);
 $('tabs').addEventListener('click',e=>{
@@ -141,6 +141,7 @@ async function loadTeacher(){
   try{
     currentData=await api('load',{teacher});currentTeacher=teacher;
     fillIdentity();renderSection();$('saveBtn').disabled=false;$('printBtn').disabled=false;$('chartBtn').disabled=false;
+    $('chartPanel').classList.remove('hidden');drawResultsChart();
     showMsg('status',`Data ${currentData.name} berhasil dimuat. Perubahan baru tersimpan setelah tombol Simpan ditekan.`,'info');
   }catch(err){currentTeacher='';currentData=null;$('saveBtn').disabled=true;showMsg('status',err.message,'error');}
   finally{setBusy(false);}
@@ -176,6 +177,7 @@ function renderSection(){
   html+=`<div style="margin-top:20px"><label for="note-${activeSection}">Catatan kepala sekolah / supervisor</label><textarea id="note-${activeSection}" class="section-note" placeholder="Tuliskan catatan, umpan balik, dan tindak lanjut...">${esc(section.note||'')}</textarea><div class="btnrow no-print"><button type="button" class="secondary" id="autoNoteBtn">Bantu Buat Catatan Otomatis</button></div><p class="muted">Draf ini disusun dari skor yang dipilih, bukan hasil AI online. Periksa dan sesuaikan dengan pengamatan nyata sebelum menyimpan.</p></div>`;
   $('sectionPanel').innerHTML=html;
 }
+$('sectionPanel').addEventListener('change',e=>{if(e.target.matches('input[type=radio]') && currentData && !$('chartPanel').classList.contains('hidden')) drawResultsChart();});
 
 function getSectionStats(sectionKey,data=collectData()){
  const section=(data.sections||{})[sectionKey]||{scores:{}},items=(currentData?.sections?.[sectionKey]?.items)||[];
@@ -230,8 +232,8 @@ function buildPrintableReport(){
  $('printReport').innerHTML=html;
 }
 document.addEventListener('click',e=>{if(e.target?.id==='autoNoteBtn')makeAutomaticNote();});
-$('printBtn').addEventListener('click',()=>{if(!currentTeacher)return;buildPrintableReport();window.print();});
-$('chartBtn').addEventListener('click',drawResultsChart);
+$('printBtn').addEventListener('click',()=>{if(!currentTeacher){showMsg('status','Pilih guru terlebih dahulu untuk mencetak laporan.','error');return;}buildPrintableReport();setTimeout(()=>window.print(),150);});
+$('chartBtn').addEventListener('click',()=>{if(!currentTeacher){showMsg('status','Pilih guru terlebih dahulu untuk melihat grafik.','error');return;}drawResultsChart();$('chartPanel').scrollIntoView({behavior:'smooth',block:'start'});});
 window.addEventListener('resize',()=>{if(!$('chartPanel')?.classList.contains('hidden')&&currentData)drawResultsChart();});
 
 $('saveBtn').addEventListener('click',async()=>{
