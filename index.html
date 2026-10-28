@@ -9,7 +9,7 @@
 :root{--navy:#102a43;--blue:#1d4ed8;--sky:#eaf2ff;--gold:#f5b942;--ink:#172b4d;--muted:#64748b;--line:#dbe4ef;--bg:#f4f7fb;--green:#13795b}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,"Segoe UI",Arial,sans-serif;color:var(--ink)}
 header{background:linear-gradient(120deg,#102a43,#174a78);color:white;padding:22px 18px;box-shadow:0 5px 20px #102a4322}
-.head{max-width:1200px;margin:auto;display:flex;align-items:center;gap:16px}.logo{width:76px;height:76px;border-radius:50%;object-fit:cover;background:white;border:3px solid #fff;box-shadow:0 0 0 3px var(--gold)}
+.head{max-width:1200px;margin:auto;display:flex;align-items:center;gap:16px}.logo{width:76px;height:76px;border-radius:50%;object-fit:cover;background:white;border:3px solid #fff;box-shadow:0 0 0 3px #7dd3fc}
 h1{font-size:clamp(20px,3vw,29px);margin:0 0 5px;font-weight:800}.sub{margin:0;color:#dbeafe;font-size:14px;line-height:1.5}
 .wrap{max-width:1200px;margin:24px auto;padding:0 16px 40px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:18px;box-shadow:0 6px 22px #0f172a08}
 .login{max-width:440px;margin:8vh auto}.brandline{font-weight:800;color:var(--navy);font-size:20px;margin-bottom:7px}.muted{color:var(--muted);font-size:14px;line-height:1.55}
@@ -32,6 +32,7 @@ footer{text-align:center;color:#64748b;font-size:12px;padding:14px}
 .report-table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}
 .report-table th,.report-table td{border:1px solid #cbd5e1;padding:8px;text-align:left;vertical-align:top}
 .report-table th{background:#eff6ff}
+.compare-chart{width:100%;overflow-x:auto;margin-top:12px}.compare-chart canvas{width:100%;display:block}.compare-table-wrap{overflow-x:auto}
 @media(max-width:760px){.chart-wrap canvas{height:260px}}
 @media print{
  body{background:white!important;color:#111!important;font-size:11pt}
@@ -76,8 +77,9 @@ footer{text-align:center;color:#64748b;font-size:12px;padding:14px}
   <div class="card feature-card no-print">
     <h3>Laporan dan Analisis Supervisi</h3>
     <p class="muted">Pilih guru dan simpan hasil terlebih dahulu. Laporan dapat dicetak atau disimpan menjadi PDF melalui pilihan printer "Save as PDF".</p>
-    <div class="feature-actions"><button class="primary" id="printBtn" disabled>Cetak / Simpan PDF Guru</button><button class="secondary" id="chartBtn" disabled>Tampilkan Grafik Hasil</button></div>
+    <div class="feature-actions"><button class="primary" id="printBtn" disabled>Cetak / Simpan PDF Guru</button><button class="secondary" id="chartBtn" disabled>Tampilkan Grafik Hasil</button><button class="secondary" id="compareBtn" type="button">Perbandingan Semua Guru</button></div>
     <div id="chartPanel" class="report-panel hidden"><h3>Grafik Hasil Supervisi</h3><p class="muted" id="chartCaption"></p><div class="chart-wrap"><canvas id="resultChart" width="850" height="320" aria-label="Grafik hasil tiga instrumen supervisi"></canvas></div><div id="chartSummary" class="muted"></div></div>
+    <div id="comparisonPanel" class="report-panel hidden"><h3>Perbandingan Hasil Supervisi Semua Guru</h3><p class="muted" id="comparisonStatus">Grafik membandingkan persentase gabungan dari butir yang telah diberi skor pada tiga instrumen.</p><div class="compare-chart"><canvas id="comparisonChart" width="850" height="400" aria-label="Grafik perbandingan hasil supervisi semua guru"></canvas></div><div class="compare-table-wrap"><table class="report-table" id="comparisonTable"></table></div></div>
   </div>
   <div id="printReport" class="hidden"></div>
 </section>
@@ -91,7 +93,7 @@ const LABELS = {
   proses:'Instrumen Pengamatan Proses Pembelajaran Kurmer',
   modul:'Kelengkapan Modul Ajar'
 };
-let PASSWORD='', currentTeacher='', currentData=null, activeSection='administrasi', isBusy=false;
+let PASSWORD='', currentTeacher='', currentData=null, activeSection='administrasi', isBusy=false, teacherList=[], comparisonResults=[];
 
 const $ = id => document.getElementById(id);
 function esc(value){return String(value ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -118,6 +120,7 @@ $('loginForm').addEventListener('submit',async e=>{
   setBusy(true);
   try{
     const result=await api('init');
+    teacherList=Array.isArray(result.teachers)?result.teachers:[];
     $('teacher').innerHTML='<option value="">Pilih guru...</option>'+result.teachers.map(t=>`<option value="${esc(t.sheet)}">${esc(t.name)}${t.subject?' — '+esc(t.subject):''}${t.missing?' (sheet tidak ditemukan)':''}</option>`).join('');
     $('loginCard').classList.add('hidden'); $('app').classList.remove('hidden');
     showMsg('status','Berhasil masuk. Pilih nama guru untuk memulai.','success');
@@ -126,7 +129,7 @@ $('loginForm').addEventListener('submit',async e=>{
 });
 $('logoutBtn').addEventListener('click',()=>{
   PASSWORD='';currentTeacher='';currentData=null;$('app').classList.add('hidden');$('loginCard').classList.remove('hidden');$('password').value='';
-  $('teacher').innerHTML='<option value="">Pilih guru...</option>';$('sectionPanel').innerHTML='<p class="muted">Pilih guru untuk memuat instrumen.</p>';$('status').innerHTML='';$('printBtn').disabled=true;$('chartBtn').disabled=true;$('chartPanel').classList.add('hidden');$('saveBtn').disabled=true;
+  $('teacher').innerHTML='<option value="">Pilih guru...</option>';$('sectionPanel').innerHTML='<p class="muted">Pilih guru untuk memuat instrumen.</p>';$('status').innerHTML='';$('printBtn').disabled=true;$('chartBtn').disabled=true;$('chartPanel').classList.add('hidden');$('comparisonPanel').classList.add('hidden');comparisonResults=[];$('saveBtn').disabled=true;
 });
 $('teacher').addEventListener('change',loadTeacher);
 $('tabs').addEventListener('click',e=>{
@@ -274,6 +277,76 @@ function drawResultsChart(){
  stats.forEach((st,i)=>{const x=left+i*slot+(slot-barW)/2,barH=plotH*st.percent/100,y=top+plotH-barH;ctx.fillStyle='#2563eb';ctx.fillRect(x,y,barW,barH);ctx.fillStyle='#102a43';ctx.textAlign='center';ctx.font='bold 12px Arial';ctx.fillText(st.count?st.percent+'%':'Belum ada skor',x+barW/2,Math.max(12,y-10));ctx.fillStyle='#334155';ctx.font='11px Arial';const words=st.label.split(' ');let lines=[],line='';words.forEach(word=>{if((line+' '+word).trim().length>17){lines.push(line);line=word}else line=(line+' '+word).trim()});if(line)lines.push(line);lines.forEach((ln,j)=>ctx.fillText(ln,x+barW/2,top+plotH+20+j*14));});
  $('chartSummary').innerHTML=stats.map(st=>`<div><b>${esc(LABELS[st.key])}:</b> ${st.count?`${st.percent}% (${st.count} butir dinilai; ${st.good} sesuai, ${st.needs} perlu penyesuaian, ${st.absent} belum tersedia)`:'belum ada skor yang diisi'}</div>`).join('');
 }
+function comparisonSectionStats(data, sectionKey){
+  const items=data?.sections?.[sectionKey]?.items||[];
+  let total=0,count=0;
+  items.forEach(item=>{
+    const raw=item.score;
+    if(raw===undefined||raw===null||raw===''||!Number.isFinite(Number(raw)))return;
+    const score=Number(raw);
+    if(score<0||score>2)return;
+    total+=score;count++;
+  });
+  return {count,percent:count?Math.round(total/(count*2)*100):null};
+}
+function comparisonTeacherStats(data, teacher){
+  const bySection={};let total=0,count=0;
+  Object.keys(LABELS).forEach(key=>{
+    const st=comparisonSectionStats(data,key);bySection[key]=st;
+    const items=data?.sections?.[key]?.items||[];
+    items.forEach(item=>{
+      const raw=item.score;
+      if(raw===undefined||raw===null||raw===''||!Number.isFinite(Number(raw)))return;
+      const score=Number(raw);if(score<0||score>2)return;
+      total+=score;count++;
+    });
+  });
+  return {name:data?.name||teacher.name||teacher.sheet||'Guru',teacher:teacher.sheet,bySection,count,percent:count?Math.round(total/(count*2)*100):null};
+}
+async function showAllTeachersComparison(){
+  if(!PASSWORD){showMsg('status','Silakan masuk terlebih dahulu.','error');return;}
+  const panel=$('comparisonPanel');panel.classList.remove('hidden');
+  $('comparisonStatus').textContent='Sedang mengambil hasil supervisi guru satu per satu. Mohon tunggu…';
+  $('compareBtn').disabled=true;
+  try{
+    const available=teacherList.filter(t=>t && t.sheet && !t.missing);
+    if(!available.length){$('comparisonStatus').textContent='Daftar guru tidak tersedia atau semua sheet belum ditemukan.';return;}
+    const results=[];const failures=[];
+    for(const teacher of available){
+      try{
+        const data=await api('load',{teacher:teacher.sheet});
+        results.push(comparisonTeacherStats(data,teacher));
+      }catch(err){failures.push(teacher.name||teacher.sheet);}
+    }
+    results.sort((a,b)=>{
+      if(a.percent===null&&b.percent===null)return a.name.localeCompare(b.name,'id');
+      if(a.percent===null)return 1;if(b.percent===null)return -1;
+      return b.percent-a.percent;
+    });
+    if(!results.length){$('comparisonStatus').textContent='Data guru belum berhasil dimuat. Periksa koneksi dan konfigurasi server.';return;}
+    comparisonResults=results;
+    drawComparisonChart(comparisonResults);
+    $('comparisonTable').innerHTML='<thead><tr><th>Nama Guru</th><th>Administrasi</th><th>Proses Pembelajaran</th><th>Modul Ajar</th><th>Gabungan</th><th>Butir Dinilai</th></tr></thead><tbody>'+results.map(r=>`<tr><td>${esc(r.name)}</td><td>${r.bySection.administrasi.percent===null?'Belum dinilai':r.bySection.administrasi.percent+'%'}</td><td>${r.bySection.proses.percent===null?'Belum dinilai':r.bySection.proses.percent+'%'}</td><td>${r.bySection.modul.percent===null?'Belum dinilai':r.bySection.modul.percent+'%'}</td><td><b>${r.percent===null?'Belum dinilai':r.percent+'%'}</b></td><td>${r.count}</td></tr>`).join('')+'</tbody>';
+    $('comparisonStatus').textContent=`Berhasil membaca ${results.length} guru. Persentase gabungan dihitung dari semua butir yang memiliki skor (0–2), bukan dari catatan teks.`+(failures.length?` Tidak berhasil dimuat: ${failures.join(', ')}.`:'');
+    panel.scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(err){$('comparisonStatus').textContent='Grafik belum dapat dibuat: '+(err.message||'terjadi kesalahan');}
+  finally{$('compareBtn').disabled=false;}
+}
+function drawComparisonChart(results){
+  const canvas=$('comparisonChart'),ctx=canvas.getContext('2d');
+  const width=Math.max(320,canvas.parentElement.clientWidth||850),rowH=34,top=20,bottom=24,height=Math.max(300,top+bottom+results.length*rowH),ratio=window.devicePixelRatio||1;
+  canvas.width=width*ratio;canvas.height=height*ratio;canvas.style.height=height+'px';ctx.setTransform(ratio,0,0,ratio,0,0);
+  const left=Math.min(210,Math.max(120,width*.34)),right=50,plotW=width-left-right;
+  ctx.clearRect(0,0,width,height);ctx.font='12px Arial';ctx.textBaseline='middle';
+  for(let pct=0;pct<=100;pct+=20){const x=left+plotW*pct/100;ctx.strokeStyle='#e2e8f0';ctx.beginPath();ctx.moveTo(x,top-6);ctx.lineTo(x,height-bottom);ctx.stroke();ctx.fillStyle='#64748b';ctx.textAlign='center';ctx.fillText(pct+'%',x,height-10);}
+  results.forEach((r,i)=>{
+    const y=top+i*rowH+4;ctx.textAlign='right';ctx.fillStyle='#334155';ctx.font='12px Arial';
+    let name=r.name||'Guru';if(name.length>27)name=name.slice(0,26)+'…';ctx.fillText(name,left-10,y+10);
+    if(r.percent!==null){const bw=plotW*r.percent/100;ctx.fillStyle='#60a5fa';ctx.fillRect(left,y,bw,20);ctx.fillStyle='#102a43';ctx.textAlign='left';ctx.font='bold 11px Arial';ctx.fillText(r.percent+'%',Math.min(left+bw+6,width-38),y+10);}
+    else{ctx.fillStyle='#64748b';ctx.textAlign='left';ctx.fillText('Belum dinilai',left+5,y+10);}
+  });
+}
+
 function buildPrintableReport(){
  if(!currentData)return;
  const data=collectData(),keys=Object.keys(LABELS),stats=keys.map(key=>({key,...getSectionStats(key,data)}));
@@ -293,7 +366,8 @@ function buildPrintableReport(){
 document.addEventListener('click',e=>{if(e.target?.id==='autoNoteBtn')makeAutomaticNote();});
 $('printBtn').addEventListener('click',()=>{if(!currentTeacher){showMsg('status','Pilih guru terlebih dahulu untuk mencetak laporan.','error');return;}buildPrintableReport();setTimeout(()=>window.print(),150);});
 $('chartBtn').addEventListener('click',()=>{if(!currentTeacher){showMsg('status','Pilih guru terlebih dahulu untuk melihat grafik.','error');return;}drawResultsChart();$('chartPanel').scrollIntoView({behavior:'smooth',block:'start'});});
-window.addEventListener('resize',()=>{if(!$('chartPanel')?.classList.contains('hidden')&&currentData)drawResultsChart();});
+$('compareBtn').addEventListener('click',showAllTeachersComparison);
+window.addEventListener('resize',()=>{if(!$('chartPanel')?.classList.contains('hidden')&&currentData)drawResultsChart();if(!$('comparisonPanel')?.classList.contains('hidden')&&comparisonResults.length)drawComparisonChart(comparisonResults);});
 
 $('saveBtn').addEventListener('click',async()=>{
   if(!currentTeacher||!currentData){showMsg('status','Pilih guru terlebih dahulu.','error');return;}
